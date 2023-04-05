@@ -5,8 +5,13 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Point
+import android.os.Build
+import android.util.DisplayMetrics
 import android.view.View
+import android.view.WindowManager
+import androidx.annotation.RequiresApi
 
+@RequiresApi(Build.VERSION_CODES.R)
 class BallView(context: Context?) : View(context) {
     private val rebound = 0.6f
     private val friction = 0.98f
@@ -34,13 +39,61 @@ class BallView(context: Context?) : View(context) {
         this.yAccel = yAccel
     }
 
-    init {
+/*    init {
         val size = Point()
         val display = (context as MainActivity).windowManager.defaultDisplay
         display.getSize(size)
         xMax = size.x.toFloat() - dstWidth
         yMax = size.y.toFloat() - dstHeight
+    }*/
+
+/*
+    init {
+        val metrics = DisplayMetrics()
+        val windowManager = (context as MainActivity).windowManager
+        windowManager.defaultDisplay.getMetrics(metrics)
+        xMax = metrics.widthPixels.toFloat() - dstWidth
+        yMax = metrics.heightPixels.toFloat() - dstHeight
     }
+*/
+/*init {
+    val windowManager = context?.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+    val display = windowManager.defaultDisplay
+    val size = Point()
+    display.getSize(size)
+    xMax = size.x.toFloat() - dstWidth
+    yMax = size.y.toFloat() - dstHeight
+}*/
+
+/*    init {
+        val windowManager = context?.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val display = context.display
+        val size = Point()
+        display?.getSize(size)
+        xMax = size.x.toFloat() - dstWidth
+        yMax = size.y.toFloat() - dstHeight
+    }*/
+
+/*
+    init {
+        val windowManager = context?.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val display = windowManager.defaultDisplay
+        val size = Point()
+        display.getSize(size)
+        xMax = size.x.toFloat() - dstWidth
+        yMax = size.y.toFloat() - dstHeight
+    }
+*/
+
+    init {
+        val windowManager = context?.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val metrics = windowManager.currentWindowMetrics.bounds
+        xMax = metrics.width().toFloat() - dstWidth
+        yMax = metrics.height().toFloat() - dstHeight
+    }
+
+
+
 
 /*        fun updateBall() {
             val frameTime = 0.666f
@@ -112,6 +165,7 @@ class BallView(context: Context?) : View(context) {
         }
     }*/ //funciona se ve la bola pero parece que esta elevada con mas suelo
 
+/*
     fun updateBall() {
         val frameTime = 0.666f
         xVel += xAccel * frameTime
@@ -141,6 +195,49 @@ class BallView(context: Context?) : View(context) {
         xVel *= friction
         yVel *= friction
     }
+*/
+
+    fun updateBall() {
+        // Calcula el tiempo transcurrido desde el último frame
+        val frameTime = 0.666f
+
+        // Ajusta la velocidad según la aceleración
+        xVel += xAccel * frameTime
+        yVel += yAccel * frameTime
+
+        // Calcula la cantidad de movimiento en cada eje
+        val xS = xVel * frameTime
+        val yS = yVel * frameTime
+
+        // Actualiza la posición de la pelota
+        xPos += xS
+        yPos += yS
+
+        // Detecta colisiones con las paredes
+        if (xPos < 0) {
+            // Si la pelota choca con la pared izquierda, la hace rebotar y detiene su velocidad en el eje x
+            xPos = 0f
+            xVel = -xVel * rebound
+        } else if (xPos > xMax) {
+            // Si la pelota choca con la pared derecha, la hace rebotar y detiene su velocidad en el eje x
+            xPos = xMax
+            xVel = -xVel * rebound
+        }
+        if (yPos < 0) {
+            // Si la pelota choca con el techo, la hace rebotar y detiene su velocidad en el eje y
+            yPos = 0f
+            yVel = -yVel * rebound
+        } else if (yPos > yMax - dstHeight) {
+            // Si la pelota choca con el suelo, la hace rebotar y detiene su velocidad en el eje y
+            yPos = yMax - dstHeight
+            yVel = -yVel * rebound
+        }
+
+        // Aplica fricción para desacelerar la pelota
+        xVel *= friction
+        yVel *= friction
+    }
+
 
 
     override fun onDraw(canvas: Canvas) {
